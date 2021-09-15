@@ -1,21 +1,24 @@
 package edu.escuelaing.arep.networking.httpServer;
 
 import java.net.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.escuelaing.arep.networking.springplus.Service;
 
-import java.awt.Component;
 import java.io.*;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class HttpServer {
     private static final HttpServer _instance = new HttpServer();
-    private static final Integer PORT = 35000;
+    private static final Integer PORT = 35001;
 
     private HashMap<String, Method> services = new HashMap<>();
 
@@ -35,12 +38,12 @@ public class HttpServer {
             System.err.println("Could not listen on port: 35000. ");
             System.exit(1);
         }
-
+        searchForComponents();
         boolean running = true;
         while (running) {
             Socket clientSocket = null;
             try {
-                System.out.println("Listo para recibir ...");
+                System.out.println("Listo para recibir por el puerto: " + PORT + "...");
                 clientSocket = serverSocket.accept();
             } catch (Exception e) {
                 System.err.println("Accept failed.");
@@ -50,6 +53,19 @@ public class HttpServer {
             manageConnection(clientSocket);
         }
         serverSocket.close();
+    }
+
+    private void searchForComponents() {
+
+    }
+
+    public void loadServices(Class c) throws ClassNotFoundException {
+        for (Method m : c.getDeclaredMethods()) {
+            if (m.isAnnotationPresent(Service.class)) {
+                String uri = m.getAnnotation(Service.class).uri();
+                services.put(uri, m);
+            }
+        }
     }
 
     public void manageConnection(Socket clientSocket) throws IOException, URISyntaxException {
@@ -70,6 +86,7 @@ public class HttpServer {
         URI resourceURI = new URI(uriStr);
         System.out.println("URI Path: " + resourceURI.getPath());
         System.out.println("URI query: " + resourceURI.getQuery());
+
         if (resourceURI.toString().startsWith("/appuser")) {
             outputLine = getComponentResource(resourceURI);
             out.println(outputLine);
@@ -86,40 +103,50 @@ public class HttpServer {
     }
 
     private String getComponentResource(URI resourceURI) {
-        String response = "";
+        String response = default404HTMLResponse();
         try {
-            String classPath = resourceURI.toString().replaceAll("/appuser/", "");
+            String classPath = resourceURI.getPath().toString().replaceAll("/appuser/", "");
             Class component = Class.forName(classPath);
             for (Method m : component.getDeclaredMethods()) {
                 if (m.isAnnotationPresent(Service.class)) {
                     response = m.invoke(null).toString();
+                    response = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + "\r\n" + response;
                 }
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
             response = default404HTMLResponse();
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
+            response = default404HTMLResponse();
         } catch (InvocationTargetException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
+            response = default404HTMLResponse();
         }
-        return "";
+        return response;
     }
 
     private String getHTMLResource(URI resourceURI) {
-        String response = default404HTMLResponse();
-        try {
-            String serviceURI = resourceURI.getPath().toString().replaceAll("/appuser", "");
-            Method m = services.get(serviceURI);
-            response = m.invoke(null).toString();
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        Path file = Paths.get("resources/public_html" + resourceURI.getPath());
 
+        String response = "";
+        Charset charset = Charset.forName("UTF-8");
+        try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+            response = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + "\r\n";
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+                response = response + line;
+            }
+        } catch (IOException e) {
+            System.err.format("IOEXception: %s%n", e);
+            response = default404HTMLResponse();
         }
         return response;
     }
 
     private String default404HTMLResponse() {
-        String outputLine = "HTPP/1.1 404 Not found\r\n" + "Content-Type: text/html\r\n" + "\r\n" + "<!DOCTYPE html>"
+        String outputLine = "HTTP/1.1 404 Not found\r\n" + "Content-Type: text/html\r\n" + "\r\n" + "<!DOCTYPE html>"
                 + "<html>" + " <head>" + "     <title>404 Not Found </title>" + "     <meta charset=\"UTF-8\""
                 + "     <meta name=\"viewport\"" + " </head>" + "<body>" + "     <div><h1>Error 404</h1></div>"
                 + " </body>" + "</html>";
@@ -153,7 +180,7 @@ public class HttpServer {
     public static void main(String[] args) throws IOException, URISyntaxException {
         try {
             HttpServer.getInstance().startServer(args);
-        } catch (IOException e) {
+        } catch (IOException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (URISyntaxException ex) {
             Logger.getLogger(HttpServer.class.getName()).log(Level.SEVERE, null, ex);

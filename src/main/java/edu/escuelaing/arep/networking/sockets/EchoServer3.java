@@ -45,6 +45,5 @@ public class EchoServer3 {
             clientSocket.close();
             serverSocket.close();
         }
-
     }
 }

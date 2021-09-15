@@ -1,10 +1,10 @@
 package edu.escuelaing.arep.networking.webapp;
 
 import java.io.IOException;
-import java.lang.System.Logger;
-import java.lang.System.LoggerFinder;
+
 import java.net.URISyntaxException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.escuelaing.arep.networking.httpServer.HttpServer;
 

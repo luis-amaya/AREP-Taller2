@@ -4,7 +4,7 @@
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="java.vm.version" value="15.0.2+7-27"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-15.0.2\bin"/>
-    <property name="maven.multiModuleProjectDirectory" value="C:\Users\Luis\Documents\Octavo Semestre\AREP\Semana 2\Taller Network\networking"/>
+    <property name="maven.multiModuleProjectDirectory" value="C:\Users\Luis\Documents\Octavo Semestre\AREP\Semana 2\Taller Network\Networking"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
@@ -50,14 +50,14 @@
     <property name="java.vm.info" value="mixed mode, sharing"/>
     <property name="java.version" value="15.0.2"/>
     <property name="java.vendor" value="Oracle Corporation"/>
-    <property name="sun.stderr.encoding" value="cp437"/>
+    <property name="sun.stderr.encoding" value="cp65001"/>
     <property name="maven.home" value="C:\Program Files\Java\apache-maven-3.8.1\bin\.."/>
     <property name="file.separator" value="\"/>
     <property name="java.version.date" value="2021-01-19"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="sun.cpu.endian" value="little"/>
-    <property name="sun.stdout.encoding" value="cp437"/>
+    <property name="sun.stdout.encoding" value="cp65001"/>
     <property name="sun.cpu.isalist" value="amd64"/>
   </properties>
   <testcase classname="edu.escuelaing.arep.AppTest" name="testApp" time="0.002"/>
